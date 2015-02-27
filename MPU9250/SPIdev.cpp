@@ -3,6 +3,11 @@
 
 #define BUFFSIZE 20
 
+/** Default timeout value for read operations.
+ * Set this to 0 to disable timeout detection.
+ */
+uint16_t SPIdev::readTimeout = SPIDEV_DEFAULT_READ_TIMEOUT;
+
 /** Default constructor.
  */
 SPIdev::SPIdev() {
