@@ -47,6 +47,8 @@ FreeIMU::FreeIMU() {
     accgyro = MPU60X0(); // I2C
   #elif HAS_MPU6000()
     accgyro = MPU60X0(); // SPI for Arduimu v3
+  #elif HAS_QBOARD()
+    accgyro = MPU9250();
   #endif
     
   #if HAS_MS5611()
@@ -125,17 +127,21 @@ void FreeIMU::init(int accgyro_addr, bool fastmode) {
     // as per note from atmega8 manual pg167
     cbi(PORTC, 4);
     cbi(PORTC, 5);
+  #elif HAS_QBOARD()
+    // nop
   #else
     // deactivate internal pull-ups for twi
     // as per note from atmega128 manual pg204
     cbi(PORTD, 0);
     cbi(PORTD, 1);
   #endif
-  
+
+  #if !HAS_QBOARD()
   if(fastmode) { // switch to 400KHz I2C - eheheh
     TWBR = ((F_CPU / 400000L) - 16) / 2; // see twi_init in Wire/utility/twi.c
   }
-  
+  #endif
+
   #if HAS_ADXL345()
     // init ADXL345
     acc.init(acc_addr);
@@ -175,8 +181,14 @@ void FreeIMU::init(int accgyro_addr, bool fastmode) {
   accgyro.setFullScaleGyroRange(MPU60X0_GYRO_FS_2000);
   delay(5);
   #endif 
-  
-  
+
+  #if HAS_QBOARD()
+  accgyro = MPU9250();
+  accgyro.initialize();
+  accgyro.setFullScaleGyroRange(MPU9250_GYRO_FS_2000);
+  delay(5);
+  #endif
+
   #if HAS_HMC5883L()
   // init HMC5843
   magn.init(false); // Don't set mode yet, we'll do that later on.
@@ -258,6 +270,12 @@ void FreeIMU::getRawValues(int * raw_values) {
   #if HAS_ITG3200()
     acc.readAccel(&raw_values[0], &raw_values[1], &raw_values[2]);
     gyro.readGyroRaw(&raw_values[3], &raw_values[4], &raw_values[5]);
+  #elif HAS_QBOARD()
+    int16_t raw_values16[6];
+    accgyro.getMotion6(&raw_values16[0], &raw_values16[1], &raw_values16[2], &raw_values16[3], &raw_values16[4], &raw_values16[5]);
+    for (uint8_t i = 0; i < sizeof(raw_values16)/sizeof(raw_values[0]); i++) {
+        raw_values[i] = raw_values16[i];
+    }
   #else
     accgyro.getMotion6(&raw_values[0], &raw_values[1], &raw_values[2], &raw_values[3], &raw_values[4], &raw_values[5]);
   #endif
