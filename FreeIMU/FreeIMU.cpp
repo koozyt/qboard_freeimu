@@ -273,7 +273,7 @@ void FreeIMU::getRawValues(int * raw_values) {
   #elif HAS_QBOARD()
     int16_t raw_values16[6];
     accgyro.getMotion6(&raw_values16[0], &raw_values16[1], &raw_values16[2], &raw_values16[3], &raw_values16[4], &raw_values16[5]);
-    for (uint8_t i = 0; i < sizeof(raw_values16)/sizeof(raw_values[0]); i++) {
+    for (uint8_t i = 0; i < sizeof(raw_values16)/sizeof(raw_values16[0]); i++) {
         raw_values[i] = raw_values16[i];
     }
   #else
