@@ -38,7 +38,7 @@ void MPU9250::initialize() {
  * @return True if connection is valid, false otherwise
  */
 bool MPU9250::testConnection() {
-    return getDeviceID() == 0b110100;
+    return getDeviceID() == 0x71;
 }
 
 // SMPLRT_DIV register
@@ -2372,26 +2372,12 @@ void MPU9250::setFIFOByte(uint8_t data) {
 
 /** Get Device ID.
  * This register is used to verify the identity of the device (0b110100).
- * @return Device ID (should be 0x68, 104 dec, 150 oct)
+ * @return Device ID (should be 0x71)
  * @see MPU9250_RA_WHO_AM_I
- * @see MPU9250_WHO_AM_I_BIT
- * @see MPU9250_WHO_AM_I_LENGTH
  */
 uint8_t MPU9250::getDeviceID() {
-    SPIdev::readBits(devAddr, MPU9250_RA_WHO_AM_I, MPU9250_WHO_AM_I_BIT, MPU9250_WHO_AM_I_LENGTH, buffer);
+    SPIdev::readByte(devAddr, MPU9250_RA_WHO_AM_I, buffer);
     return buffer[0];
-}
-/** Set Device ID.
- * Write a new ID into the WHO_AM_I register (no idea why this should ever be
- * necessary though).
- * @param id New device ID to set.
- * @see getDeviceID()
- * @see MPU9250_RA_WHO_AM_I
- * @see MPU9250_WHO_AM_I_BIT
- * @see MPU9250_WHO_AM_I_LENGTH
- */
-void MPU9250::setDeviceID(uint8_t id) {
-    SPIdev::writeBits(devAddr, MPU9250_RA_WHO_AM_I, MPU9250_WHO_AM_I_BIT, MPU9250_WHO_AM_I_LENGTH, id);
 }
 
 // ======== UNDOCUMENTED/DMP REGISTERS/METHODS ========

@@ -330,9 +330,6 @@
 #define MPU9250_WAKE_FREQ_5         0x2
 #define MPU9250_WAKE_FREQ_10        0x3
 
-#define MPU9250_WHO_AM_I_BIT        6
-#define MPU9250_WHO_AM_I_LENGTH     6
-
 class MPU9250 {
 public:
     MPU9250();
@@ -577,7 +574,6 @@ public:
 
     // WHO_AM_I register
     uint8_t getDeviceID();
-    void setDeviceID(uint8_t id);
 
     // ======== UNDOCUMENTED/DMP REGISTERS/METHODS ========
 
