@@ -271,8 +271,10 @@ void FreeIMU::getRawValues(int * raw_values) {
     acc.readAccel(&raw_values[0], &raw_values[1], &raw_values[2]);
     gyro.readGyroRaw(&raw_values[3], &raw_values[4], &raw_values[5]);
   #elif HAS_QBOARD()
-    int16_t raw_values16[6];
-    accgyro.getMotion6(&raw_values16[0], &raw_values16[1], &raw_values16[2], &raw_values16[3], &raw_values16[4], &raw_values16[5]);
+    int16_t raw_values16[9];
+    accgyro.getMotion9(&raw_values16[0], &raw_values16[1], &raw_values16[2],
+                       &raw_values16[3], &raw_values16[4], &raw_values16[5],
+                       &raw_values16[6], &raw_values16[7], &raw_values16[8]);
     for (uint8_t i = 0; i < sizeof(raw_values16)/sizeof(raw_values16[0]); i++) {
         raw_values[i] = raw_values16[i];
     }
@@ -298,7 +300,7 @@ void FreeIMU::getRawValues(int * raw_values) {
 /**
  * Populates values with calibrated readings from the sensors
 */
-void FreeIMU::getValues(float * values) {  
+void FreeIMU::getValues(float * values) {
   #if HAS_ITG3200()
     int accval[3];
     acc.readAccel(&accval[0], &accval[1], &accval[2]);
@@ -306,10 +308,21 @@ void FreeIMU::getValues(float * values) {
     values[1] = (float) accval[1];
     values[2] = (float) accval[2];
     gyro.readGyro(&values[3]);
+  #elif HAS_QBOARD()
+    int16_t val[9];
+    accgyro.getMotion9(&val[0], &val[1], &val[2], &val[3], &val[4], &val[5], &val[6], &val[7], &val[8]);
+    // remove offsets from the gyroscope
+    val[3] = val[3] - gyro_off_x;
+    val[4] = val[4] - gyro_off_y;
+    val[5] = val[5] - gyro_off_z;
+
+    for(int i = 0; i<9; i++) {
+      values[i] = (float) val[i];
+    }
   #else // MPU6050
     int16_t accgyroval[6];
     accgyro.getMotion6(&accgyroval[0], &accgyroval[1], &accgyroval[2], &accgyroval[3], &accgyroval[4], &accgyroval[5]);
-    
+
     // remove offsets from the gyroscope
     accgyroval[3] = accgyroval[3] - gyro_off_x;
     accgyroval[4] = accgyroval[4] - gyro_off_y;
@@ -324,18 +337,20 @@ void FreeIMU::getValues(float * values) {
       }
     }
   #endif
-  
-  
+
+
   #warning Accelerometer calibration active: have you calibrated your device?
   // remove offsets and scale accelerometer (calibration)
   values[0] = (values[0] - acc_off_x) / acc_scale_x;
   values[1] = (values[1] - acc_off_y) / acc_scale_y;
   values[2] = (values[2] - acc_off_z) / acc_scale_z;
-  
-  
+
+
   #if HAS_HMC5883L()
     magn.getValues(&values[6]);
-    // calibration 
+  #endif
+  #if IS_9DOM()
+    // calibration
     #warning Magnetometer calibration active: have you calibrated your device?
     values[6] = (values[6] - magn_off_x) / magn_scale_x;
     values[7] = (values[7] - magn_off_y) / magn_scale_y;
