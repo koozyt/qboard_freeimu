@@ -274,54 +274,6 @@ uint8_t MPU9250::getFullScaleAccelRange() {
 void MPU9250::setFullScaleAccelRange(uint8_t range) {
     SPIdev::writeBits(devAddr, MPU9250_RA_ACCEL_CONFIG, MPU9250_ACONFIG_AFS_SEL_BIT, MPU9250_ACONFIG_AFS_SEL_LENGTH, range);
 }
-/** Get the high-pass filter configuration.
- * The DHPF is a filter module in the path leading to motion detectors (Free
- * Fall, Motion threshold, and Zero Motion). The high pass filter output is not
- * available to the data registers (see Figure in Section 8 of the MPU-6000/
- * MPU-6050 Product Specification document).
- *
- * The high pass filter has three modes:
- *
- * <pre>
- *    Reset: The filter output settles to zero within one sample. This
- *           effectively disables the high pass filter. This mode may be toggled
- *           to quickly settle the filter.
- *
- *    On:    The high pass filter will pass signals above the cut off frequency.
- *
- *    Hold:  When triggered, the filter holds the present sample. The filter
- *           output will be the difference between the input sample and the held
- *           sample.
- * </pre>
- *
- * <pre>
- * ACCEL_HPF | Filter Mode | Cut-off Frequency
- * ----------+-------------+------------------
- * 0         | Reset       | None
- * 1         | On          | 5Hz
- * 2         | On          | 2.5Hz
- * 3         | On          | 1.25Hz
- * 4         | On          | 0.63Hz
- * 7         | Hold        | None
- * </pre>
- *
- * @return Current high-pass filter configuration
- * @see MPU9250_DHPF_RESET
- * @see MPU9250_RA_ACCEL_CONFIG
- */
-uint8_t MPU9250::getDHPFMode() {
-    SPIdev::readBits(devAddr, MPU9250_RA_ACCEL_CONFIG, MPU9250_ACONFIG_ACCEL_HPF_BIT, MPU9250_ACONFIG_ACCEL_HPF_LENGTH, buffer);
-    return buffer[0];
-}
-/** Set the high-pass filter configuration.
- * @param bandwidth New high-pass filter configuration
- * @see setDHPFMode()
- * @see MPU9250_DHPF_RESET
- * @see MPU9250_RA_ACCEL_CONFIG
- */
-void MPU9250::setDHPFMode(uint8_t bandwidth) {
-    SPIdev::writeBits(devAddr, MPU9250_RA_ACCEL_CONFIG, MPU9250_ACONFIG_ACCEL_HPF_BIT, MPU9250_ACONFIG_ACCEL_HPF_LENGTH, bandwidth);
-}
 
 // FIFO_EN register
 
@@ -1198,31 +1150,6 @@ bool MPU9250::getI2CBypassEnabled() {
 void MPU9250::setI2CBypassEnabled(bool enabled) {
     SPIdev::writeBit(devAddr, MPU9250_RA_INT_PIN_CFG, MPU9250_INTCFG_I2C_BYPASS_EN_BIT, enabled);
 }
-/** Get reference clock output enabled status.
- * When this bit is equal to 1, a reference clock output is provided at the
- * CLKOUT pin. When this bit is equal to 0, the clock output is disabled. For
- * further information regarding CLKOUT, please refer to the MPU-9250 Product
- * Specification document.
- * @return Current reference clock output enabled status
- * @see MPU9250_RA_INT_PIN_CFG
- * @see MPU9250_INTCFG_CLKOUT_EN_BIT
- */
-bool MPU9250::getClockOutputEnabled() {
-    SPIdev::readBit(devAddr, MPU9250_RA_INT_PIN_CFG, MPU9250_INTCFG_CLKOUT_EN_BIT, buffer);
-    return buffer[0];
-}
-/** Set reference clock output enabled status.
- * When this bit is equal to 1, a reference clock output is provided at the
- * CLKOUT pin. When this bit is equal to 0, the clock output is disabled. For
- * further information regarding CLKOUT, please refer to the MPU-9250 Product
- * Specification document.
- * @param enabled New reference clock output enabled status
- * @see MPU9250_RA_INT_PIN_CFG
- * @see MPU9250_INTCFG_CLKOUT_EN_BIT
- */
-void MPU9250::setClockOutputEnabled(bool enabled) {
-    SPIdev::writeBit(devAddr, MPU9250_RA_INT_PIN_CFG, MPU9250_INTCFG_CLKOUT_EN_BIT, enabled);
-}
 
 // INT_ENABLE register
 /** Get full interrupt enabled status.
@@ -1230,7 +1157,6 @@ void MPU9250::setClockOutputEnabled(bool enabled) {
  * set 0 for disabled, 1 for enabled.
  * @return Current interrupt enabled status
  * @see MPU9250_RA_INT_ENABLE
- * @see MPU9250_INTERRUPT_FF_BIT
  **/
 uint8_t MPU9250::getIntEnabled() {
     SPIdev::readByte(devAddr, MPU9250_RA_INT_ENABLE, buffer);
@@ -1242,70 +1168,12 @@ uint8_t MPU9250::getIntEnabled() {
  * @param enabled New interrupt enabled status
  * @see getIntFreefallEnabled()
  * @see MPU9250_RA_INT_ENABLE
- * @see MPU9250_INTERRUPT_FF_BIT
  **/
 void MPU9250::setIntEnabled(uint8_t enabled) {
     SPIdev::writeByte(devAddr, MPU9250_RA_INT_ENABLE, enabled);
 }
 
 
-/** Get Free Fall interrupt enabled status.
- * Will be set 0 for disabled, 1 for enabled.
- * @return Current interrupt enabled status
- * @see MPU9250_RA_INT_ENABLE
- * @see MPU9250_INTERRUPT_FF_BIT
- **/
-bool MPU9250::getIntFreefallEnabled() {
-    SPIdev::readBit(devAddr, MPU9250_RA_INT_ENABLE, MPU9250_INTERRUPT_FF_BIT, buffer);
-    return buffer[0];
-}
-/** Set Free Fall interrupt enabled status.
- * @param enabled New interrupt enabled status
- * @see getIntFreefallEnabled()
- * @see MPU9250_RA_INT_ENABLE
- * @see MPU9250_INTERRUPT_FF_BIT
- **/
-void MPU9250::setIntFreefallEnabled(bool enabled) {
-    SPIdev::writeBit(devAddr, MPU9250_RA_INT_ENABLE, MPU9250_INTERRUPT_FF_BIT, enabled);
-}
-/** Get Motion Detection interrupt enabled status.
- * Will be set 0 for disabled, 1 for enabled.
- * @return Current interrupt enabled status
- * @see MPU9250_RA_INT_ENABLE
- * @see MPU9250_INTERRUPT_MOT_BIT
- **/
-bool MPU9250::getIntMotionEnabled() {
-    SPIdev::readBit(devAddr, MPU9250_RA_INT_ENABLE, MPU9250_INTERRUPT_MOT_BIT, buffer);
-    return buffer[0];
-}
-/** Set Motion Detection interrupt enabled status.
- * @param enabled New interrupt enabled status
- * @see getIntMotionEnabled()
- * @see MPU9250_RA_INT_ENABLE
- * @see MPU9250_INTERRUPT_MOT_BIT
- **/
-void MPU9250::setIntMotionEnabled(bool enabled) {
-    SPIdev::writeBit(devAddr, MPU9250_RA_INT_ENABLE, MPU9250_INTERRUPT_MOT_BIT, enabled);
-}
-/** Get Zero Motion Detection interrupt enabled status.
- * Will be set 0 for disabled, 1 for enabled.
- * @return Current interrupt enabled status
- * @see MPU9250_RA_INT_ENABLE
- * @see MPU9250_INTERRUPT_ZMOT_BIT
- **/
-bool MPU9250::getIntZeroMotionEnabled() {
-    SPIdev::readBit(devAddr, MPU9250_RA_INT_ENABLE, MPU9250_INTERRUPT_ZMOT_BIT, buffer);
-    return buffer[0];
-}
-/** Set Zero Motion Detection interrupt enabled status.
- * @param enabled New interrupt enabled status
- * @see getIntZeroMotionEnabled()
- * @see MPU9250_RA_INT_ENABLE
- * @see MPU9250_INTERRUPT_ZMOT_BIT
- **/
-void MPU9250::setIntZeroMotionEnabled(bool enabled) {
-    SPIdev::writeBit(devAddr, MPU9250_RA_INT_ENABLE, MPU9250_INTERRUPT_ZMOT_BIT, enabled);
-}
 /** Get FIFO Buffer Overflow interrupt enabled status.
  * Will be set 0 for disabled, 1 for enabled.
  * @return Current interrupt enabled status
@@ -1324,26 +1192,6 @@ bool MPU9250::getIntFIFOBufferOverflowEnabled() {
  **/
 void MPU9250::setIntFIFOBufferOverflowEnabled(bool enabled) {
     SPIdev::writeBit(devAddr, MPU9250_RA_INT_ENABLE, MPU9250_INTERRUPT_FIFO_OFLOW_BIT, enabled);
-}
-/** Get I2C Master interrupt enabled status.
- * This enables any of the I2C Master interrupt sources to generate an
- * interrupt. Will be set 0 for disabled, 1 for enabled.
- * @return Current interrupt enabled status
- * @see MPU9250_RA_INT_ENABLE
- * @see MPU9250_INTERRUPT_I2C_MST_INT_BIT
- **/
-bool MPU9250::getIntI2CMasterEnabled() {
-    SPIdev::readBit(devAddr, MPU9250_RA_INT_ENABLE, MPU9250_INTERRUPT_I2C_MST_INT_BIT, buffer);
-    return buffer[0];
-}
-/** Set I2C Master interrupt enabled status.
- * @param enabled New interrupt enabled status
- * @see getIntI2CMasterEnabled()
- * @see MPU9250_RA_INT_ENABLE
- * @see MPU9250_INTERRUPT_I2C_MST_INT_BIT
- **/
-void MPU9250::setIntI2CMasterEnabled(bool enabled) {
-    SPIdev::writeBit(devAddr, MPU9250_RA_INT_ENABLE, MPU9250_INTERRUPT_I2C_MST_INT_BIT, enabled);
 }
 /** Get Data Ready interrupt enabled setting.
  * This event occurs each time a write operation to all of the sensor registers
@@ -1378,39 +1226,6 @@ uint8_t MPU9250::getIntStatus() {
     SPIdev::readByte(devAddr, MPU9250_RA_INT_STATUS, buffer);
     return buffer[0];
 }
-/** Get Free Fall interrupt status.
- * This bit automatically sets to 1 when a Free Fall interrupt has been
- * generated. The bit clears to 0 after the register has been read.
- * @return Current interrupt status
- * @see MPU9250_RA_INT_STATUS
- * @see MPU9250_INTERRUPT_FF_BIT
- */
-bool MPU9250::getIntFreefallStatus() {
-    SPIdev::readBit(devAddr, MPU9250_RA_INT_STATUS, MPU9250_INTERRUPT_FF_BIT, buffer);
-    return buffer[0];
-}
-/** Get Motion Detection interrupt status.
- * This bit automatically sets to 1 when a Motion Detection interrupt has been
- * generated. The bit clears to 0 after the register has been read.
- * @return Current interrupt status
- * @see MPU9250_RA_INT_STATUS
- * @see MPU9250_INTERRUPT_MOT_BIT
- */
-bool MPU9250::getIntMotionStatus() {
-    SPIdev::readBit(devAddr, MPU9250_RA_INT_STATUS, MPU9250_INTERRUPT_MOT_BIT, buffer);
-    return buffer[0];
-}
-/** Get Zero Motion Detection interrupt status.
- * This bit automatically sets to 1 when a Zero Motion Detection interrupt has
- * been generated. The bit clears to 0 after the register has been read.
- * @return Current interrupt status
- * @see MPU9250_RA_INT_STATUS
- * @see MPU9250_INTERRUPT_ZMOT_BIT
- */
-bool MPU9250::getIntZeroMotionStatus() {
-    SPIdev::readBit(devAddr, MPU9250_RA_INT_STATUS, MPU9250_INTERRUPT_ZMOT_BIT, buffer);
-    return buffer[0];
-}
 /** Get FIFO Buffer Overflow interrupt status.
  * This bit automatically sets to 1 when a Free Fall interrupt has been
  * generated. The bit clears to 0 after the register has been read.
@@ -1420,18 +1235,6 @@ bool MPU9250::getIntZeroMotionStatus() {
  */
 bool MPU9250::getIntFIFOBufferOverflowStatus() {
     SPIdev::readBit(devAddr, MPU9250_RA_INT_STATUS, MPU9250_INTERRUPT_FIFO_OFLOW_BIT, buffer);
-    return buffer[0];
-}
-/** Get I2C Master interrupt status.
- * This bit automatically sets to 1 when an I2C Master interrupt has been
- * generated. For a list of I2C Master interrupts, please refer to Register 54.
- * The bit clears to 0 after the register has been read.
- * @return Current interrupt status
- * @see MPU9250_RA_INT_STATUS
- * @see MPU9250_INTERRUPT_I2C_MST_INT_BIT
- */
-bool MPU9250::getIntI2CMasterStatus() {
-    SPIdev::readBit(devAddr, MPU9250_RA_INT_STATUS, MPU9250_INTERRUPT_I2C_MST_INT_BIT, buffer);
     return buffer[0];
 }
 /** Get Data Ready interrupt status.
@@ -1839,111 +1642,6 @@ void MPU9250::resetTemperaturePath() {
     SPIdev::writeBit(devAddr, MPU9250_RA_SIGNAL_PATH_RESET, MPU9250_PATHRESET_TEMP_RESET_BIT, true);
 }
 
-// MOT_DETECT_CTRL register
-
-/** Get accelerometer power-on delay.
- * The accelerometer data path provides samples to the sensor registers, Motion
- * detection, Zero Motion detection, and Free Fall detection modules. The
- * signal path contains filters which must be flushed on wake-up with new
- * samples before the detection modules begin operations. The default wake-up
- * delay, of 4ms can be lengthened by up to 3ms. This additional delay is
- * specified in ACCEL_ON_DELAY in units of 1 LSB = 1 ms. The user may select
- * any value above zero unless instructed otherwise by InvenSense. Please refer
- * to Section 8 of the MPU-6000/MPU-6050 Product Specification document for
- * further information regarding the detection modules.
- * @return Current accelerometer power-on delay
- * @see MPU9250_RA_MOT_DETECT_CTRL
- * @see MPU9250_DETECT_ACCEL_ON_DELAY_BIT
- */
-uint8_t MPU9250::getAccelerometerPowerOnDelay() {
-    SPIdev::readBits(devAddr, MPU9250_RA_MOT_DETECT_CTRL, MPU9250_DETECT_ACCEL_ON_DELAY_BIT, MPU9250_DETECT_ACCEL_ON_DELAY_LENGTH, buffer);
-    return buffer[0];
-}
-/** Set accelerometer power-on delay.
- * @param delay New accelerometer power-on delay (0-3)
- * @see getAccelerometerPowerOnDelay()
- * @see MPU9250_RA_MOT_DETECT_CTRL
- * @see MPU9250_DETECT_ACCEL_ON_DELAY_BIT
- */
-void MPU9250::setAccelerometerPowerOnDelay(uint8_t delay) {
-    SPIdev::writeBits(devAddr, MPU9250_RA_MOT_DETECT_CTRL, MPU9250_DETECT_ACCEL_ON_DELAY_BIT, MPU9250_DETECT_ACCEL_ON_DELAY_LENGTH, delay);
-}
-/** Get Free Fall detection counter decrement configuration.
- * Detection is registered by the Free Fall detection module after accelerometer
- * measurements meet their respective threshold conditions over a specified
- * number of samples. When the threshold conditions are met, the corresponding
- * detection counter increments by 1. The user may control the rate at which the
- * detection counter decrements when the threshold condition is not met by
- * configuring FF_COUNT. The decrement rate can be set according to the
- * following table:
- *
- * <pre>
- * FF_COUNT | Counter Decrement
- * ---------+------------------
- * 0        | Reset
- * 1        | 1
- * 2        | 2
- * 3        | 4
- * </pre>
- *
- * When FF_COUNT is configured to 0 (reset), any non-qualifying sample will
- * reset the counter to 0. For further information on Free Fall detection,
- * please refer to Registers 29 to 32.
- *
- * @return Current decrement configuration
- * @see MPU9250_RA_MOT_DETECT_CTRL
- * @see MPU9250_DETECT_FF_COUNT_BIT
- */
-uint8_t MPU9250::getFreefallDetectionCounterDecrement() {
-    SPIdev::readBits(devAddr, MPU9250_RA_MOT_DETECT_CTRL, MPU9250_DETECT_FF_COUNT_BIT, MPU9250_DETECT_FF_COUNT_LENGTH, buffer);
-    return buffer[0];
-}
-/** Set Free Fall detection counter decrement configuration.
- * @param decrement New decrement configuration value
- * @see getFreefallDetectionCounterDecrement()
- * @see MPU9250_RA_MOT_DETECT_CTRL
- * @see MPU9250_DETECT_FF_COUNT_BIT
- */
-void MPU9250::setFreefallDetectionCounterDecrement(uint8_t decrement) {
-    SPIdev::writeBits(devAddr, MPU9250_RA_MOT_DETECT_CTRL, MPU9250_DETECT_FF_COUNT_BIT, MPU9250_DETECT_FF_COUNT_LENGTH, decrement);
-}
-/** Get Motion detection counter decrement configuration.
- * Detection is registered by the Motion detection module after accelerometer
- * measurements meet their respective threshold conditions over a specified
- * number of samples. When the threshold conditions are met, the corresponding
- * detection counter increments by 1. The user may control the rate at which the
- * detection counter decrements when the threshold condition is not met by
- * configuring MOT_COUNT. The decrement rate can be set according to the
- * following table:
- *
- * <pre>
- * MOT_COUNT | Counter Decrement
- * ----------+------------------
- * 0         | Reset
- * 1         | 1
- * 2         | 2
- * 3         | 4
- * </pre>
- *
- * When MOT_COUNT is configured to 0 (reset), any non-qualifying sample will
- * reset the counter to 0. For further information on Motion detection,
- * please refer to Registers 29 to 32.
- *
- */
-uint8_t MPU9250::getMotionDetectionCounterDecrement() {
-    SPIdev::readBits(devAddr, MPU9250_RA_MOT_DETECT_CTRL, MPU9250_DETECT_MOT_COUNT_BIT, MPU9250_DETECT_MOT_COUNT_LENGTH, buffer);
-    return buffer[0];
-}
-/** Set Motion detection counter decrement configuration.
- * @param decrement New decrement configuration value
- * @see getMotionDetectionCounterDecrement()
- * @see MPU9250_RA_MOT_DETECT_CTRL
- * @see MPU9250_DETECT_MOT_COUNT_BIT
- */
-void MPU9250::setMotionDetectionCounterDecrement(uint8_t decrement) {
-    SPIdev::writeBits(devAddr, MPU9250_RA_MOT_DETECT_CTRL, MPU9250_DETECT_MOT_COUNT_BIT, MPU9250_DETECT_MOT_COUNT_LENGTH, decrement);
-}
-
 // USER_CTRL register
 
 /** Get FIFO enabled status.
@@ -2087,35 +1785,6 @@ bool MPU9250::getWakeCycleEnabled() {
 void MPU9250::setWakeCycleEnabled(bool enabled) {
     SPIdev::writeBit(devAddr, MPU9250_RA_PWR_MGMT_1, MPU9250_PWR1_CYCLE_BIT, enabled);
 }
-/** Get temperature sensor enabled status.
- * Control the usage of the internal temperature sensor.
- *
- * Note: this register stores the *disabled* value, but for consistency with the
- * rest of the code, the function is named and used with standard true/false
- * values to indicate whether the sensor is enabled or disabled, respectively.
- *
- * @return Current temperature sensor enabled status
- * @see MPU9250_RA_PWR_MGMT_1
- * @see MPU9250_PWR1_TEMP_DIS_BIT
- */
-bool MPU9250::getTempSensorEnabled() {
-    SPIdev::readBit(devAddr, MPU9250_RA_PWR_MGMT_1, MPU9250_PWR1_TEMP_DIS_BIT, buffer);
-    return buffer[0] == 0; // 1 is actually disabled here
-}
-/** Set temperature sensor enabled status.
- * Note: this register stores the *disabled* value, but for consistency with the
- * rest of the code, the function is named and used with standard true/false
- * values to indicate whether the sensor is enabled or disabled, respectively.
- *
- * @param enabled New temperature sensor enabled status
- * @see getTempSensorEnabled()
- * @see MPU9250_RA_PWR_MGMT_1
- * @see MPU9250_PWR1_TEMP_DIS_BIT
- */
-void MPU9250::setTempSensorEnabled(bool enabled) {
-    // 1 is actually disabled here
-    SPIdev::writeBit(devAddr, MPU9250_RA_PWR_MGMT_1, MPU9250_PWR1_TEMP_DIS_BIT, !enabled);
-}
 /** Get clock source setting.
  * @return Current clock source setting
  * @see MPU9250_RA_PWR_MGMT_1
@@ -2158,158 +1827,6 @@ uint8_t MPU9250::getClockSource() {
  */
 void MPU9250::setClockSource(uint8_t source) {
     SPIdev::writeBits(devAddr, MPU9250_RA_PWR_MGMT_1, MPU9250_PWR1_CLKSEL_BIT, MPU9250_PWR1_CLKSEL_LENGTH, source);
-}
-
-// PWR_MGMT_2 register
-
-/** Get wake frequency in Accel-Only Low Power Mode.
- * The MPU-9250 can be put into Accerlerometer Only Low Power Mode by setting
- * PWRSEL to 1 in the Power Management 1 register (Register 107). In this mode,
- * the device will power off all devices except for the primary I2C interface,
- * waking only the accelerometer at fixed intervals to take a single
- * measurement. The frequency of wake-ups can be configured with LP_WAKE_CTRL
- * as shown below:
- *
- * <pre>
- * LP_WAKE_CTRL | Wake-up Frequency
- * -------------+------------------
- * 0            | 1.25 Hz
- * 1            | 2.5 Hz
- * 2            | 5 Hz
- * 3            | 10 Hz
- * <pre>
- *
- * For further information regarding the MPU-9250's power modes, please refer to
- * Register 107.
- *
- * @return Current wake frequency
- * @see MPU9250_RA_PWR_MGMT_2
- */
-uint8_t MPU9250::getWakeFrequency() {
-    SPIdev::readBits(devAddr, MPU9250_RA_PWR_MGMT_2, MPU9250_PWR2_LP_WAKE_CTRL_BIT, MPU9250_PWR2_LP_WAKE_CTRL_LENGTH, buffer);
-    return buffer[0];
-}
-/** Set wake frequency in Accel-Only Low Power Mode.
- * @param frequency New wake frequency
- * @see MPU9250_RA_PWR_MGMT_2
- */
-void MPU9250::setWakeFrequency(uint8_t frequency) {
-    SPIdev::writeBits(devAddr, MPU9250_RA_PWR_MGMT_2, MPU9250_PWR2_LP_WAKE_CTRL_BIT, MPU9250_PWR2_LP_WAKE_CTRL_LENGTH, frequency);
-}
-
-/** Get X-axis accelerometer standby enabled status.
- * If enabled, the X-axis will not gather or report data (or use power).
- * @return Current X-axis standby enabled status
- * @see MPU9250_RA_PWR_MGMT_2
- * @see MPU9250_PWR2_STBY_XA_BIT
- */
-bool MPU9250::getStandbyXAccelEnabled() {
-    SPIdev::readBit(devAddr, MPU9250_RA_PWR_MGMT_2, MPU9250_PWR2_STBY_XA_BIT, buffer);
-    return buffer[0];
-}
-/** Set X-axis accelerometer standby enabled status.
- * @param New X-axis standby enabled status
- * @see getStandbyXAccelEnabled()
- * @see MPU9250_RA_PWR_MGMT_2
- * @see MPU9250_PWR2_STBY_XA_BIT
- */
-void MPU9250::setStandbyXAccelEnabled(bool enabled) {
-    SPIdev::writeBit(devAddr, MPU9250_RA_PWR_MGMT_2, MPU9250_PWR2_STBY_XA_BIT, enabled);
-}
-/** Get Y-axis accelerometer standby enabled status.
- * If enabled, the Y-axis will not gather or report data (or use power).
- * @return Current Y-axis standby enabled status
- * @see MPU9250_RA_PWR_MGMT_2
- * @see MPU9250_PWR2_STBY_YA_BIT
- */
-bool MPU9250::getStandbyYAccelEnabled() {
-    SPIdev::readBit(devAddr, MPU9250_RA_PWR_MGMT_2, MPU9250_PWR2_STBY_YA_BIT, buffer);
-    return buffer[0];
-}
-/** Set Y-axis accelerometer standby enabled status.
- * @param New Y-axis standby enabled status
- * @see getStandbyYAccelEnabled()
- * @see MPU9250_RA_PWR_MGMT_2
- * @see MPU9250_PWR2_STBY_YA_BIT
- */
-void MPU9250::setStandbyYAccelEnabled(bool enabled) {
-    SPIdev::writeBit(devAddr, MPU9250_RA_PWR_MGMT_2, MPU9250_PWR2_STBY_YA_BIT, enabled);
-}
-/** Get Z-axis accelerometer standby enabled status.
- * If enabled, the Z-axis will not gather or report data (or use power).
- * @return Current Z-axis standby enabled status
- * @see MPU9250_RA_PWR_MGMT_2
- * @see MPU9250_PWR2_STBY_ZA_BIT
- */
-bool MPU9250::getStandbyZAccelEnabled() {
-    SPIdev::readBit(devAddr, MPU9250_RA_PWR_MGMT_2, MPU9250_PWR2_STBY_ZA_BIT, buffer);
-    return buffer[0];
-}
-/** Set Z-axis accelerometer standby enabled status.
- * @param New Z-axis standby enabled status
- * @see getStandbyZAccelEnabled()
- * @see MPU9250_RA_PWR_MGMT_2
- * @see MPU9250_PWR2_STBY_ZA_BIT
- */
-void MPU9250::setStandbyZAccelEnabled(bool enabled) {
-    SPIdev::writeBit(devAddr, MPU9250_RA_PWR_MGMT_2, MPU9250_PWR2_STBY_ZA_BIT, enabled);
-}
-/** Get X-axis gyroscope standby enabled status.
- * If enabled, the X-axis will not gather or report data (or use power).
- * @return Current X-axis standby enabled status
- * @see MPU9250_RA_PWR_MGMT_2
- * @see MPU9250_PWR2_STBY_XG_BIT
- */
-bool MPU9250::getStandbyXGyroEnabled() {
-    SPIdev::readBit(devAddr, MPU9250_RA_PWR_MGMT_2, MPU9250_PWR2_STBY_XG_BIT, buffer);
-    return buffer[0];
-}
-/** Set X-axis gyroscope standby enabled status.
- * @param New X-axis standby enabled status
- * @see getStandbyXGyroEnabled()
- * @see MPU9250_RA_PWR_MGMT_2
- * @see MPU9250_PWR2_STBY_XG_BIT
- */
-void MPU9250::setStandbyXGyroEnabled(bool enabled) {
-    SPIdev::writeBit(devAddr, MPU9250_RA_PWR_MGMT_2, MPU9250_PWR2_STBY_XG_BIT, enabled);
-}
-/** Get Y-axis gyroscope standby enabled status.
- * If enabled, the Y-axis will not gather or report data (or use power).
- * @return Current Y-axis standby enabled status
- * @see MPU9250_RA_PWR_MGMT_2
- * @see MPU9250_PWR2_STBY_YG_BIT
- */
-bool MPU9250::getStandbyYGyroEnabled() {
-    SPIdev::readBit(devAddr, MPU9250_RA_PWR_MGMT_2, MPU9250_PWR2_STBY_YG_BIT, buffer);
-    return buffer[0];
-}
-/** Set Y-axis gyroscope standby enabled status.
- * @param New Y-axis standby enabled status
- * @see getStandbyYGyroEnabled()
- * @see MPU9250_RA_PWR_MGMT_2
- * @see MPU9250_PWR2_STBY_YG_BIT
- */
-void MPU9250::setStandbyYGyroEnabled(bool enabled) {
-    SPIdev::writeBit(devAddr, MPU9250_RA_PWR_MGMT_2, MPU9250_PWR2_STBY_YG_BIT, enabled);
-}
-/** Get Z-axis gyroscope standby enabled status.
- * If enabled, the Z-axis will not gather or report data (or use power).
- * @return Current Z-axis standby enabled status
- * @see MPU9250_RA_PWR_MGMT_2
- * @see MPU9250_PWR2_STBY_ZG_BIT
- */
-bool MPU9250::getStandbyZGyroEnabled() {
-    SPIdev::readBit(devAddr, MPU9250_RA_PWR_MGMT_2, MPU9250_PWR2_STBY_ZG_BIT, buffer);
-    return buffer[0];
-}
-/** Set Z-axis gyroscope standby enabled status.
- * @param New Z-axis standby enabled status
- * @see getStandbyZGyroEnabled()
- * @see MPU9250_RA_PWR_MGMT_2
- * @see MPU9250_PWR2_STBY_ZG_BIT
- */
-void MPU9250::setStandbyZGyroEnabled(bool enabled) {
-    SPIdev::writeBit(devAddr, MPU9250_RA_PWR_MGMT_2, MPU9250_PWR2_STBY_ZG_BIT, enabled);
 }
 
 // FIFO_COUNT* registers
@@ -2414,54 +1931,12 @@ void MPU9250::setZGyroOffset(int16_t offset) {
     SPIdev::writeWord(devAddr, MPU9250_RA_ZG_OFFS_H, offset);
 }
 
-// INT_ENABLE register (DMP functions)
-
-bool MPU9250::getIntPLLReadyEnabled() {
-    SPIdev::readBit(devAddr, MPU9250_RA_INT_ENABLE, MPU9250_INTERRUPT_PLL_RDY_INT_BIT, buffer);
-    return buffer[0];
-}
-void MPU9250::setIntPLLReadyEnabled(bool enabled) {
-    SPIdev::writeBit(devAddr, MPU9250_RA_INT_ENABLE, MPU9250_INTERRUPT_PLL_RDY_INT_BIT, enabled);
-}
-bool MPU9250::getIntDMPEnabled() {
-    SPIdev::readBit(devAddr, MPU9250_RA_INT_ENABLE, MPU9250_INTERRUPT_DMP_INT_BIT, buffer);
-    return buffer[0];
-}
-void MPU9250::setIntDMPEnabled(bool enabled) {
-    SPIdev::writeBit(devAddr, MPU9250_RA_INT_ENABLE, MPU9250_INTERRUPT_DMP_INT_BIT, enabled);
-}
-
-// INT_STATUS register (DMP functions)
-
-bool MPU9250::getIntPLLReadyStatus() {
-    SPIdev::readBit(devAddr, MPU9250_RA_INT_STATUS, MPU9250_INTERRUPT_PLL_RDY_INT_BIT, buffer);
-    return buffer[0];
-}
-bool MPU9250::getIntDMPStatus() {
-    SPIdev::readBit(devAddr, MPU9250_RA_INT_STATUS, MPU9250_INTERRUPT_DMP_INT_BIT, buffer);
-    return buffer[0];
-}
-
-// USER_CTRL register (DMP functions)
-
-bool MPU9250::getDMPEnabled() {
-    SPIdev::readBit(devAddr, MPU9250_RA_USER_CTRL, MPU9250_USERCTRL_DMP_EN_BIT, buffer);
-    return buffer[0];
-}
-void MPU9250::setDMPEnabled(bool enabled) {
-    SPIdev::writeBit(devAddr, MPU9250_RA_USER_CTRL, MPU9250_USERCTRL_DMP_EN_BIT, enabled);
-}
-void MPU9250::resetDMP() {
-    SPIdev::writeBit(devAddr, MPU9250_RA_USER_CTRL, MPU9250_USERCTRL_DMP_RESET_BIT, true);
-}
-
-
 // Magnetometer
 void MPU9250::initMgnt() {
     lastMgnt[0] = lastMgnt[1] = lastMgnt[2] = 0;
 
     // enable I2C master
-    SPIdev::writeBit(devAddr, MPU9250_RA_USER_CTRL, 5, 1);
+    SPIdev::writeBit(devAddr, MPU9250_RA_USER_CTRL, MPU9250_USERCTRL_I2C_MST_EN_BIT, 1);
 
     // power down mode
     SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_ADDR, AK8963_ADDRESS);
@@ -2493,14 +1968,14 @@ void MPU9250::initMgnt() {
     SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_DO, 0x00);
     delay(1);
     SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_DO, 0x16);
-    delay(3000);
 }
 
 uint8_t MPU9250::getMgntDeviceID() {
     uint8_t id;
     // read who am i register
+    delay(10);
     SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_ADDR, 0x80 | AK8963_ADDRESS);
-    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_REG, AK8963_DEVICEID);
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_REG, AK8963_WIA);
     SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_CTRL, 0x81);
     delay(10);
     SPIdev::readBytes(devAddr, MPU9250_RA_EXT_SENS_DATA_00, 1, &id);

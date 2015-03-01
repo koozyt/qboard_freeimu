@@ -9,6 +9,7 @@
 #define MPU9250_DEFAULT_ADDRESS         MPU9250_ADDRESS_AD0_LOW
 #define MPU9250_DEFAULT_SS_PIN          15
 
+// register address
 #define MPU9250_RA_SELF_TEST_X_GYRO     0x00
 #define MPU9250_RA_SELF_TEST_Y_GYRO     0x01
 #define MPU9250_RA_SELF_TEST_Z_GYRO     0x02
@@ -110,7 +111,7 @@
 #define MPU9250_RA_ZA_OFFSET_H          0x7D
 #define MPU9250_RA_ZA_OFFSET_L          0x7E
 
-
+#define MPU9250_CFG_FIFO_MODE_BIT       6
 #define MPU9250_CFG_EXT_SYNC_SET_BIT    5
 #define MPU9250_CFG_EXT_SYNC_SET_LENGTH 3
 #define MPU9250_CFG_DLPF_CFG_BIT        2
@@ -125,13 +126,14 @@
 #define MPU9250_EXT_SYNC_ACCEL_YOUT_L   0x6
 #define MPU9250_EXT_SYNC_ACCEL_ZOUT_L   0x7
 
-#define MPU9250_DLPF_BW_256             0x00
-#define MPU9250_DLPF_BW_188             0x01
-#define MPU9250_DLPF_BW_98              0x02
-#define MPU9250_DLPF_BW_42              0x03
+#define MPU9250_DLPF_BW_250             0x00
+#define MPU9250_DLPF_BW_184             0x01
+#define MPU9250_DLPF_BW_92              0x02
+#define MPU9250_DLPF_BW_41              0x03
 #define MPU9250_DLPF_BW_20              0x04
 #define MPU9250_DLPF_BW_10              0x05
 #define MPU9250_DLPF_BW_5               0x06
+#define MPU9250_DLPF_BW_3600            0x07
 
 #define MPU9250_GCONFIG_FS_SEL_BIT      4
 #define MPU9250_GCONFIG_FS_SEL_LENGTH   2
@@ -146,20 +148,11 @@
 #define MPU9250_ACONFIG_ZA_ST_BIT           5
 #define MPU9250_ACONFIG_AFS_SEL_BIT         4
 #define MPU9250_ACONFIG_AFS_SEL_LENGTH      2
-#define MPU9250_ACONFIG_ACCEL_HPF_BIT       2
-#define MPU9250_ACONFIG_ACCEL_HPF_LENGTH    3
 
 #define MPU9250_ACCEL_FS_2              0x00
 #define MPU9250_ACCEL_FS_4              0x01
 #define MPU9250_ACCEL_FS_8              0x02
 #define MPU9250_ACCEL_FS_16             0x03
-
-#define MPU9250_DHPF_RESET              0x00
-#define MPU9250_DHPF_5                  0x01
-#define MPU9250_DHPF_2P5                0x02
-#define MPU9250_DHPF_1P25               0x03
-#define MPU9250_DHPF_0P63               0x04
-#define MPU9250_DHPF_HOLD               0x07
 
 #define MPU9250_TEMP_FIFO_EN_BIT    7
 #define MPU9250_XG_FIFO_EN_BIT      6
@@ -229,7 +222,6 @@
 #define MPU9250_INTCFG_FSYNC_INT_LEVEL_BIT  3
 #define MPU9250_INTCFG_FSYNC_INT_EN_BIT     2
 #define MPU9250_INTCFG_I2C_BYPASS_EN_BIT    1
-#define MPU9250_INTCFG_CLKOUT_EN_BIT        0
 
 #define MPU9250_INTMODE_ACTIVEHIGH  0x00
 #define MPU9250_INTMODE_ACTIVELOW   0x01
@@ -243,31 +235,15 @@
 #define MPU9250_INTCLEAR_STATUSREAD 0x00
 #define MPU9250_INTCLEAR_ANYREAD    0x01
 
-#define MPU9250_INTERRUPT_FF_BIT            7
-#define MPU9250_INTERRUPT_MOT_BIT           6
-#define MPU9250_INTERRUPT_ZMOT_BIT          5
+#define MPU9250_INTERRUPT_WOM_BIT           6
 #define MPU9250_INTERRUPT_FIFO_OFLOW_BIT    4
-#define MPU9250_INTERRUPT_I2C_MST_INT_BIT   3
-#define MPU9250_INTERRUPT_PLL_RDY_INT_BIT   2
-#define MPU9250_INTERRUPT_DMP_INT_BIT       1
+#define MPU9250_INTERRUPT_FSYNC_INT_BIT     3
 #define MPU9250_INTERRUPT_DATA_RDY_BIT      0
 
-#define MPU9250_INTERRUPT_FF                0x80
-#define MPU9250_INTERRUPT_MOT               0x40
-#define MPU9250_INTERRUPT_ZMOT              0x20
+#define MPU9250_INTERRUPT_WOM               0x40
 #define MPU9250_INTERRUPT_FIFO_OFLOW        0x10
-#define MPU9250_INTERRUPT_I2C_MST_INT       0x08
-#define MPU9250_INTERRUPT_PLL_RDY_INT       0x04
-#define MPU9250_INTERRUPT_DMP_INT           0x02
+#define MPU9250_INTERRUPT_FSYNC_INT         0x08
 #define MPU9250_INTERRUPT_DATA_RDY          0x01
-
-#define MPU9250_MOTION_MOT_XNEG_BIT     7
-#define MPU9250_MOTION_MOT_XPOS_BIT     6
-#define MPU9250_MOTION_MOT_YNEG_BIT     5
-#define MPU9250_MOTION_MOT_YPOS_BIT     4
-#define MPU9250_MOTION_MOT_ZNEG_BIT     3
-#define MPU9250_MOTION_MOT_ZPOS_BIT     2
-#define MPU9250_MOTION_MOT_ZRMOT_BIT    0
 
 #define MPU9250_DELAYCTRL_DELAY_ES_SHADOW_BIT   7
 #define MPU9250_DELAYCTRL_I2C_SLV4_DLY_EN_BIT   4
@@ -280,23 +256,9 @@
 #define MPU9250_PATHRESET_ACCEL_RESET_BIT   1
 #define MPU9250_PATHRESET_TEMP_RESET_BIT    0
 
-#define MPU9250_DETECT_ACCEL_ON_DELAY_BIT       5
-#define MPU9250_DETECT_ACCEL_ON_DELAY_LENGTH    2
-#define MPU9250_DETECT_FF_COUNT_BIT             3
-#define MPU9250_DETECT_FF_COUNT_LENGTH          2
-#define MPU9250_DETECT_MOT_COUNT_BIT            1
-#define MPU9250_DETECT_MOT_COUNT_LENGTH         2
-
-#define MPU9250_DETECT_DECREMENT_RESET  0x0
-#define MPU9250_DETECT_DECREMENT_1      0x1
-#define MPU9250_DETECT_DECREMENT_2      0x2
-#define MPU9250_DETECT_DECREMENT_4      0x3
-
-#define MPU9250_USERCTRL_DMP_EN_BIT             7
 #define MPU9250_USERCTRL_FIFO_EN_BIT            6
 #define MPU9250_USERCTRL_I2C_MST_EN_BIT         5
 #define MPU9250_USERCTRL_I2C_IF_DIS_BIT         4
-#define MPU9250_USERCTRL_DMP_RESET_BIT          3
 #define MPU9250_USERCTRL_FIFO_RESET_BIT         2
 #define MPU9250_USERCTRL_I2C_MST_RESET_BIT      1
 #define MPU9250_USERCTRL_SIG_COND_RESET_BIT     0
@@ -304,7 +266,8 @@
 #define MPU9250_PWR1_DEVICE_RESET_BIT   7
 #define MPU9250_PWR1_SLEEP_BIT          6
 #define MPU9250_PWR1_CYCLE_BIT          5
-#define MPU9250_PWR1_TEMP_DIS_BIT       3
+#define MPU9250_PWR1_GYRO_STANDBY_BIT   4
+#define MPU9250_PWR1_PD_PTAT            3
 #define MPU9250_PWR1_CLKSEL_BIT         2
 #define MPU9250_PWR1_CLKSEL_LENGTH      3
 
@@ -314,26 +277,22 @@
 #define MPU9250_CLOCK_PLL_ZGYRO         0x03
 #define MPU9250_CLOCK_PLL_EXT32K        0x04
 #define MPU9250_CLOCK_PLL_EXT19M        0x05
+#define MPU9250_CLOCK_INTERNAL_20M      0x06
 #define MPU9250_CLOCK_KEEP_RESET        0x07
 
-#define MPU9250_PWR2_LP_WAKE_CTRL_BIT       7
-#define MPU9250_PWR2_LP_WAKE_CTRL_LENGTH    2
-#define MPU9250_PWR2_STBY_XA_BIT            5
-#define MPU9250_PWR2_STBY_YA_BIT            4
-#define MPU9250_PWR2_STBY_ZA_BIT            3
-#define MPU9250_PWR2_STBY_XG_BIT            2
-#define MPU9250_PWR2_STBY_YG_BIT            1
-#define MPU9250_PWR2_STBY_ZG_BIT            0
+#define MPU9250_PWR2_DIS_XA_BIT            5
+#define MPU9250_PWR2_DIS_YA_BIT            4
+#define MPU9250_PWR2_DIS_ZA_BIT            3
+#define MPU9250_PWR2_DIS_XG_BIT            2
+#define MPU9250_PWR2_DIS_YG_BIT            1
+#define MPU9250_PWR2_DIS_ZG_BIT            0
 
-#define MPU9250_WAKE_FREQ_1P25      0x0
-#define MPU9250_WAKE_FREQ_2P5       0x1
-#define MPU9250_WAKE_FREQ_5         0x2
-#define MPU9250_WAKE_FREQ_10        0x3
 
+// **magnetometer**
 #define AK8963_ADDRESS              0x0c
 
 // register address
-#define AK8963_DEVICEID             0x48                    // the device ID
+#define AK8963_WIA                  0x00                    // who am I
 #define AK8963_ST1                  0x02                    // status1
 #define AK8963_HXL                  0x03                    // HXL
 #define AK8963_ST2                  0x09                    // status2
@@ -376,8 +335,6 @@ public:
     void setAccelZSelfTest(bool enabled);
     uint8_t getFullScaleAccelRange();
     void setFullScaleAccelRange(uint8_t range);
-    uint8_t getDHPFMode();
-    void setDHPFMode(uint8_t mode);
 
     // FIFO_EN register
     bool getTempFIFOEnabled();
@@ -466,18 +423,10 @@ public:
     void setFSyncInterruptEnabled(bool enabled);
     bool getI2CBypassEnabled();
     void setI2CBypassEnabled(bool enabled);
-    bool getClockOutputEnabled();
-    void setClockOutputEnabled(bool enabled);
 
     // INT_ENABLE register
     uint8_t getIntEnabled();
     void setIntEnabled(uint8_t enabled);
-    bool getIntFreefallEnabled();
-    void setIntFreefallEnabled(bool enabled);
-    bool getIntMotionEnabled();
-    void setIntMotionEnabled(bool enabled);
-    bool getIntZeroMotionEnabled();
-    void setIntZeroMotionEnabled(bool enabled);
     bool getIntFIFOBufferOverflowEnabled();
     void setIntFIFOBufferOverflowEnabled(bool enabled);
     bool getIntI2CMasterEnabled();
@@ -487,11 +436,7 @@ public:
 
     // INT_STATUS register
     uint8_t getIntStatus();
-    bool getIntFreefallStatus();
-    bool getIntMotionStatus();
-    bool getIntZeroMotionStatus();
     bool getIntFIFOBufferOverflowStatus();
-    bool getIntI2CMasterStatus();
     bool getIntDataReadyStatus();
 
     // ACCEL_*OUT_* registers
@@ -530,14 +475,6 @@ public:
     void resetAccelerometerPath();
     void resetTemperaturePath();
 
-    // MOT_DETECT_CTRL register
-    uint8_t getAccelerometerPowerOnDelay();
-    void setAccelerometerPowerOnDelay(uint8_t delay);
-    uint8_t getFreefallDetectionCounterDecrement();
-    void setFreefallDetectionCounterDecrement(uint8_t decrement);
-    uint8_t getMotionDetectionCounterDecrement();
-    void setMotionDetectionCounterDecrement(uint8_t decrement);
-
     // USER_CTRL register
     bool getFIFOEnabled();
     void setFIFOEnabled(bool enabled);
@@ -554,26 +491,8 @@ public:
     void setSleepEnabled(bool enabled);
     bool getWakeCycleEnabled();
     void setWakeCycleEnabled(bool enabled);
-    bool getTempSensorEnabled();
-    void setTempSensorEnabled(bool enabled);
     uint8_t getClockSource();
     void setClockSource(uint8_t source);
-
-    // PWR_MGMT_2 register
-    uint8_t getWakeFrequency();
-    void setWakeFrequency(uint8_t frequency);
-    bool getStandbyXAccelEnabled();
-    void setStandbyXAccelEnabled(bool enabled);
-    bool getStandbyYAccelEnabled();
-    void setStandbyYAccelEnabled(bool enabled);
-    bool getStandbyZAccelEnabled();
-    void setStandbyZAccelEnabled(bool enabled);
-    bool getStandbyXGyroEnabled();
-    void setStandbyXGyroEnabled(bool enabled);
-    bool getStandbyYGyroEnabled();
-    void setStandbyYGyroEnabled(bool enabled);
-    bool getStandbyZGyroEnabled();
-    void setStandbyZGyroEnabled(bool enabled);
 
     // FIFO_COUNT_* registers
     uint16_t getFIFOCount();
@@ -600,21 +519,6 @@ public:
     // ZG_OFFS_* register
     int16_t getZGyroOffset();
     void setZGyroOffset(int16_t offset);
-
-    // INT_ENABLE register (DMP functions)
-    bool getIntPLLReadyEnabled();
-    void setIntPLLReadyEnabled(bool enabled);
-    bool getIntDMPEnabled();
-    void setIntDMPEnabled(bool enabled);
-
-    // INT_STATUS register (DMP functions)
-    bool getIntPLLReadyStatus();
-    bool getIntDMPStatus();
-
-    // USER_CTRL register (DMP functions)
-    bool getDMPEnabled();
-    void setDMPEnabled(bool enabled);
-    void resetDMP();
 
     // Magnetometer
     void initMgnt();
