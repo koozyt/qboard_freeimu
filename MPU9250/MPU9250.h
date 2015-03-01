@@ -330,6 +330,18 @@
 #define MPU9250_WAKE_FREQ_5         0x2
 #define MPU9250_WAKE_FREQ_10        0x3
 
+#define AK8963_ADDRESS              0x0c
+
+// register address
+#define AK8963_DEVICEID             0x48                    // the device ID
+#define AK8963_ST1                  0x02                    // status1
+#define AK8963_HXL                  0x03                    // HXL
+#define AK8963_ST2                  0x09                    // status2
+#define AK8963_CNTL1                0x0a                    // control1
+#define AK8963_CNTL2                0x0b                    // control2
+#define AK8963_ASAX                 0x10                    // start of the fuse ROM data
+
+
 class MPU9250 {
 public:
     MPU9250();
@@ -604,9 +616,19 @@ public:
     void setDMPEnabled(bool enabled);
     void resetDMP();
 
+    // Magnetometer
+    void initMgnt();
+    uint8_t getMgntDeviceID();
+    void getMgntValues(int16_t *mx, int16_t *my, int16_t *mz);
+    uint8_t getMgntMode();
+    uint8_t getMgntStatus1();
+    uint8_t getMgntStatus2();
 private:
     uint8_t devAddr;
     uint8_t buffer[14];
+    float mgntAdjust[3];
+    float lastMgnt[3];
+    uint8_t mgntStatuses[2];
 };
 
 

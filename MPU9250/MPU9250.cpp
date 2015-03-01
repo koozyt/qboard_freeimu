@@ -31,6 +31,8 @@ void MPU9250::initialize() {
     setFullScaleGyroRange(MPU9250_GYRO_FS_250);
     setFullScaleAccelRange(MPU9250_ACCEL_FS_2);
     setSleepEnabled(false);
+
+    initMgnt();
 }
 
 /** Verify the I2C/SPI connection.
@@ -1464,7 +1466,7 @@ bool MPU9250::getIntDataReadyStatus() {
  */
 void MPU9250::getMotion9(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz, int16_t* mx, int16_t* my, int16_t* mz) {
     getMotion6(ax, ay, az, gx, gy, gz);
-    // TODO: magnetometer integration
+    getMgntValues(mx, my, mz);
 }
 /** Get raw 6-axis motion sensor readings (accel/gyro).
  * Retrieves all currently available motion sensor values.
@@ -2451,4 +2453,101 @@ void MPU9250::setDMPEnabled(bool enabled) {
 }
 void MPU9250::resetDMP() {
     SPIdev::writeBit(devAddr, MPU9250_RA_USER_CTRL, MPU9250_USERCTRL_DMP_RESET_BIT, true);
+}
+
+
+// Magnetometer
+void MPU9250::initMgnt() {
+    lastMgnt[0] = lastMgnt[1] = lastMgnt[2] = 0;
+
+    // enable I2C master
+    SPIdev::writeBit(devAddr, MPU9250_RA_USER_CTRL, 5, 1);
+
+    // power down mode
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_ADDR, AK8963_ADDRESS);
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_REG, AK8963_CNTL1);
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_CTRL, 0x81);
+    delay(1);
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_DO, 0x00);
+
+    // fuse rom mode and read adjust data
+    delay(1);
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_DO, 0x0f);
+
+    unsigned char asa[3];
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_ADDR, 0x80 | AK8963_ADDRESS);
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_REG, AK8963_ASAX);
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_CTRL, 0x83);
+    delay(10);
+    SPIdev::readBytes(devAddr, MPU9250_RA_EXT_SENS_DATA_00, 3, asa);
+
+    mgntAdjust[0] = ((float)asa[0] - 128.0) / 256.0 + 1.0f;
+    mgntAdjust[1] = ((float)asa[1] - 128.0) / 256.0 + 1.0f;
+    mgntAdjust[2] = ((float)asa[2] - 128.0) / 256.0 + 1.0f;
+
+    // power down mode and move to read continuously mode
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_ADDR, AK8963_ADDRESS);
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_REG, AK8963_CNTL1);
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_CTRL, 0x81);
+    delay(1);
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_DO, 0x00);
+    delay(1);
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_DO, 0x16);
+    delay(3000);
+}
+
+uint8_t MPU9250::getMgntDeviceID() {
+    uint8_t id;
+    // read who am i register
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_ADDR, 0x80 | AK8963_ADDRESS);
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_REG, AK8963_DEVICEID);
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_CTRL, 0x81);
+    delay(10);
+    SPIdev::readBytes(devAddr, MPU9250_RA_EXT_SENS_DATA_00, 1, &id);
+    return id;
+}
+
+void MPU9250::getMgntValues(int16_t *mx, int16_t *my, int16_t *mz) {
+    int16_t tmx=-1,tmy=-1,tmz=-1;
+    mgntStatuses[0] = mgntStatuses[1] = 0xff;
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_ADDR, 0x80 | AK8963_ADDRESS);
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_REG, AK8963_ST1);
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_CTRL, 0x81);
+    delay(10);
+    SPIdev::readBytes(devAddr, MPU9250_RA_EXT_SENS_DATA_00, 1, buffer);
+    mgntStatuses[0] = buffer[0];
+    if ((mgntStatuses[0] & 0x03) != 0) {
+        SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_ADDR, 0x80 | AK8963_ADDRESS);
+        SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_REG, AK8963_HXL);
+        SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_CTRL, 0x87);
+        delay(10);
+        SPIdev::readBytes(devAddr, MPU9250_RA_EXT_SENS_DATA_00, 7, buffer);
+        tmx = (((int16_t)buffer[1]) << 8) | buffer[0];
+        tmy = (((int16_t)buffer[3]) << 8) | buffer[2];
+        tmz = (((int16_t)buffer[5]) << 8) | buffer[4];
+        *mx = lastMgnt[0] = tmx * mgntAdjust[0];
+        *my = lastMgnt[1] = tmy * mgntAdjust[1];
+        *mz = lastMgnt[2] = tmz * mgntAdjust[2];
+        mgntStatuses[1] = buffer[6];
+    } else {
+        *mx = lastMgnt[0];
+        *my = lastMgnt[1];
+        *mz = lastMgnt[2];
+    }
+}
+
+uint8_t MPU9250::getMgntMode() {
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_ADDR, 0x80 | AK8963_ADDRESS);
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_REG, AK8963_CNTL1);
+    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_CTRL, 0x81);
+    delay(10);
+    SPIdev::readBytes(devAddr, MPU9250_RA_EXT_SENS_DATA_00, 1, buffer);
+}
+
+uint8_t MPU9250::getMgntStatus1() {
+    return mgntStatuses[0];
+}
+
+uint8_t MPU9250::getMgntStatus2() {
+    return mgntStatuses[1];
 }
