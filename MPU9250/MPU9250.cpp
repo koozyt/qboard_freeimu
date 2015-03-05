@@ -2002,15 +2002,18 @@ void MPU9250::getMgntValues(int16_t *mx, int16_t *my, int16_t *mz) {
             tmx = (((int16_t)buffer[1]) << 8) | buffer[0];
             tmy = (((int16_t)buffer[3]) << 8) | buffer[2];
             tmz = (((int16_t)buffer[5]) << 8) | buffer[4];
-            tmx = lastMgnt[0] = tmx * mgntAdjust[0];
-            tmy = lastMgnt[1] = tmy * mgntAdjust[1];
-            tmz = lastMgnt[2] = tmz * mgntAdjust[2];
+            tmx = tmx * mgntAdjust[0];
+            tmy = tmy * mgntAdjust[1];
+            tmz = tmz * mgntAdjust[2];
             mgntStatuses[1] = buffer[6];
 
             // Align Axis
             *mx = tmy;
             *my = tmx;
             *mz = -tmz;
+            lastMgnt[0] = *mx;
+            lastMgnt[1] = *my;
+            lastMgnt[2] = *mz;
         } else {
             *mx = lastMgnt[0];
             *my = lastMgnt[1];
