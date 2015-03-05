@@ -527,12 +527,15 @@ public:
     uint8_t getMgntMode();
     uint8_t getMgntStatus1();
     uint8_t getMgntStatus2();
+    bool getMgntEnabled();
+    void setMgntEnabled(bool enabled);
 private:
     uint8_t devAddr;
     uint8_t buffer[14];
     float mgntAdjust[3];
     float lastMgnt[3];
     uint8_t mgntStatuses[2];
+    bool mgntEnabled;
 };
 
 

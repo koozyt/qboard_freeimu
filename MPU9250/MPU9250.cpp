@@ -1933,6 +1933,7 @@ void MPU9250::setZGyroOffset(int16_t offset) {
 
 // Magnetometer
 void MPU9250::initMgnt() {
+    mgntEnabled = true;
     lastMgnt[0] = lastMgnt[1] = lastMgnt[2] = 0;
 
     // enable I2C master
@@ -1984,35 +1985,39 @@ uint8_t MPU9250::getMgntDeviceID() {
 
 void MPU9250::getMgntValues(int16_t *mx, int16_t *my, int16_t *mz) {
     mgntStatuses[0] = mgntStatuses[1] = 0xff;
-    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_ADDR, 0x80 | AK8963_ADDRESS);
-    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_REG, AK8963_ST1);
-    SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_CTRL, 0x81);
-    delay(10);
-    SPIdev::readBytes(devAddr, MPU9250_RA_EXT_SENS_DATA_00, 1, buffer);
-    mgntStatuses[0] = buffer[0];
-    if ((mgntStatuses[0] & 0x03) != 0) {
-        int16_t tmx,tmy,tmz;
+    if (mgntEnabled) {
         SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_ADDR, 0x80 | AK8963_ADDRESS);
-        SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_REG, AK8963_HXL);
-        SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_CTRL, 0x87);
+        SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_REG, AK8963_ST1);
+        SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_CTRL, 0x81);
         delay(10);
-        SPIdev::readBytes(devAddr, MPU9250_RA_EXT_SENS_DATA_00, 7, buffer);
-        tmx = (((int16_t)buffer[1]) << 8) | buffer[0];
-        tmy = (((int16_t)buffer[3]) << 8) | buffer[2];
-        tmz = (((int16_t)buffer[5]) << 8) | buffer[4];
-        tmx = lastMgnt[0] = tmx * mgntAdjust[0];
-        tmy = lastMgnt[1] = tmy * mgntAdjust[1];
-        tmz = lastMgnt[2] = tmz * mgntAdjust[2];
-        mgntStatuses[1] = buffer[6];
+        SPIdev::readBytes(devAddr, MPU9250_RA_EXT_SENS_DATA_00, 1, buffer);
+        mgntStatuses[0] = buffer[0];
+        if ((mgntStatuses[0] & 0x03) != 0) {
+            int16_t tmx,tmy,tmz;
+            SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_ADDR, 0x80 | AK8963_ADDRESS);
+            SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_REG, AK8963_HXL);
+            SPIdev::writeByte(devAddr, MPU9250_RA_I2C_SLV0_CTRL, 0x87);
+            delay(10);
+            SPIdev::readBytes(devAddr, MPU9250_RA_EXT_SENS_DATA_00, 7, buffer);
+            tmx = (((int16_t)buffer[1]) << 8) | buffer[0];
+            tmy = (((int16_t)buffer[3]) << 8) | buffer[2];
+            tmz = (((int16_t)buffer[5]) << 8) | buffer[4];
+            tmx = lastMgnt[0] = tmx * mgntAdjust[0];
+            tmy = lastMgnt[1] = tmy * mgntAdjust[1];
+            tmz = lastMgnt[2] = tmz * mgntAdjust[2];
+            mgntStatuses[1] = buffer[6];
 
-        // Align Axis
-        *mx = tmy;
-        *my = tmx;
-        *mz = -tmz;
+            // Align Axis
+            *mx = tmy;
+            *my = tmx;
+            *mz = -tmz;
+        } else {
+            *mx = lastMgnt[0];
+            *my = lastMgnt[1];
+            *mz = lastMgnt[2];
+        }
     } else {
-        *mx = lastMgnt[0];
-        *my = lastMgnt[1];
-        *mz = lastMgnt[2];
+        *mx = *my = *mz = 0;
     }
 }
 
@@ -2030,4 +2035,15 @@ uint8_t MPU9250::getMgntStatus1() {
 
 uint8_t MPU9250::getMgntStatus2() {
     return mgntStatuses[1];
+}
+
+bool MPU9250::getMgntEnabled() {
+    // TODO:read from AK8963 register
+    return mgntEnabled;
+}
+
+void MPU9250::setMgntEnabled(bool enabled) {
+    mgntEnabled = enabled;
+    // TODO:change mode to powerdown when enabled == false
+    // TODO:change mode to read continuously when enabled == true
 }
