@@ -95,14 +95,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define HAS_MS5611() (defined(FREEIMU_v035_MS) || defined(FREEIMU_v04))
 #define HAS_HMC5883L() (defined(FREEIMU_v01) || defined(FREEIMU_v02) || defined(FREEIMU_v03) || defined(FREEIMU_v035) || defined(FREEIMU_v035_MS) || defined(FREEIMU_v035_BMP) || defined(FREEIMU_v04) || defined(SEN_10736) || defined(SEN_10724) || defined(SEN_10183)  || defined(ARDUIMU_v3))
 #define HAS_MPU6000() (defined(ARDUIMU_v3))
-#define HAS_QBOARD() (defined(QBOARD_001))
+#define HAS_MPU9250() (defined(QBOARD_001))
 
 #define IS_6DOM() (defined(SEN_10121) || defined(GEN_MPU6050))
 #define IS_9DOM() (defined(FREEIMU_v01) || defined(FREEIMU_v02) || defined(FREEIMU_v03) || defined(FREEIMU_v035) || defined(FREEIMU_v035_MS) || defined(FREEIMU_v035_BMP) || defined(FREEIMU_v04) || defined(SEN_10736) || defined(SEN_10724) || defined(SEN_10183) || defined(ARDUIMU_v3) || defined(QBOARD_001))
 #define HAS_AXIS_ALIGNED() (defined(FREEIMU_v01) || defined(FREEIMU_v02) || defined(FREEIMU_v03) || defined(FREEIMU_v035) || defined(FREEIMU_v035_MS) || defined(FREEIMU_v035_BMP) || defined(FREEIMU_v04) || defined(SEN_10121) || defined(SEN_10736) || defined(QBOARD_001))
 
 
-#if !HAS_QBOARD()
+
+#if !defined(QBOARD_001)
 #include <Wire.h>
 #endif
 #include "Arduino.h"
@@ -136,7 +137,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   #include "I2Cdev.h"
   #include "MPU60X0.h"
   #define FIMU_ACCGYRO_ADDR MPU60X0_DEFAULT_SS_PIN
-#elif HAS_QBOARD()
+#elif HAS_MPU9250()
   #include <SPI.h>
   #include "MPU9250.h"
   #define FIMU_ACCGYRO_ADDR 0
@@ -218,8 +219,8 @@ class FreeIMU
       MPU60X0 accgyro; 
     #elif HAS_MPU6000()
       MPU60X0 accgyro; 
-    #elif HAS_QBOARD()
-      MPU9250 accgyro;
+    #elif HAS_MPU9250()
+      MPU9250 accgyromagn;
     #endif
       
       

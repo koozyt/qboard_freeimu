@@ -47,8 +47,8 @@ FreeIMU::FreeIMU() {
     accgyro = MPU60X0(); // I2C
   #elif HAS_MPU6000()
     accgyro = MPU60X0(); // SPI for Arduimu v3
-  #elif HAS_QBOARD()
-    accgyro = MPU9250();
+  #elif HAS_MPU9250()
+    accgyromagn = MPU9250();
   #endif
     
   #if HAS_MS5611()
@@ -127,7 +127,7 @@ void FreeIMU::init(int accgyro_addr, bool fastmode) {
     // as per note from atmega8 manual pg167
     cbi(PORTC, 4);
     cbi(PORTC, 5);
-  #elif HAS_QBOARD()
+  #elif defined(QBOARD_001)
     // nop
   #else
     // deactivate internal pull-ups for twi
@@ -136,7 +136,7 @@ void FreeIMU::init(int accgyro_addr, bool fastmode) {
     cbi(PORTD, 1);
   #endif
 
-  #if !HAS_QBOARD()
+  #if !defined(QBOARD_001)
   if(fastmode) { // switch to 400KHz I2C - eheheh
     TWBR = ((F_CPU / 400000L) - 16) / 2; // see twi_init in Wire/utility/twi.c
   }
@@ -182,10 +182,10 @@ void FreeIMU::init(int accgyro_addr, bool fastmode) {
   delay(5);
   #endif 
 
-  #if HAS_QBOARD()
-  accgyro = MPU9250();
-  accgyro.initialize();
-  accgyro.setFullScaleGyroRange(MPU9250_GYRO_FS_2000);
+  #if HAS_MPU9250()
+  accgyromagn = MPU9250();
+  accgyromagn.initialize();
+  accgyromagn.setFullScaleGyroRange(MPU9250_GYRO_FS_2000);
   delay(5);
   #endif
 
@@ -270,11 +270,11 @@ void FreeIMU::getRawValues(int * raw_values) {
   #if HAS_ITG3200()
     acc.readAccel(&raw_values[0], &raw_values[1], &raw_values[2]);
     gyro.readGyroRaw(&raw_values[3], &raw_values[4], &raw_values[5]);
-  #elif HAS_QBOARD()
+  #elif HAS_MPU9250()
     int16_t raw_values16[9];
-    accgyro.getMotion9(&raw_values16[0], &raw_values16[1], &raw_values16[2],
-                       &raw_values16[3], &raw_values16[4], &raw_values16[5],
-                       &raw_values16[6], &raw_values16[7], &raw_values16[8]);
+    accgyromagn.getMotion9(&raw_values16[0], &raw_values16[1], &raw_values16[2],
+                           &raw_values16[3], &raw_values16[4], &raw_values16[5],
+                           &raw_values16[6], &raw_values16[7], &raw_values16[8]);
     for (uint8_t i = 0; i < sizeof(raw_values16)/sizeof(raw_values16[0]); i++) {
         raw_values[i] = raw_values16[i];
     }
@@ -308,9 +308,9 @@ void FreeIMU::getValues(float * values) {
     values[1] = (float) accval[1];
     values[2] = (float) accval[2];
     gyro.readGyro(&values[3]);
-  #elif HAS_QBOARD()
+  #elif HAS_MPU9250()
     int16_t val[9];
-    accgyro.getMotion9(&val[0], &val[1], &val[2], &val[3], &val[4], &val[5], &val[6], &val[7], &val[8]);
+    accgyromagn.getMotion9(&val[0], &val[1], &val[2], &val[3], &val[4], &val[5], &val[6], &val[7], &val[8]);
     // remove offsets from the gyroscope
     val[3] = val[3] - gyro_off_x;
     val[4] = val[4] - gyro_off_y;
