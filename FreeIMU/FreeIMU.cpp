@@ -317,15 +317,15 @@ void FreeIMU::getValues(float * values) {
     val[5] = val[5] - gyro_off_z;
 
     for (int i=0; i<9; i++) {
-        values[i] = (float) val[i];
+      values[i] = (float) val[i];
     }
 
     for (int i=3; i<6; i++) {
-        // NOTE: this depends on the sensitivity chosen
+      // NOTE: this depends on the sensitivity chosen
       //values[i] *=  250.0f / 32768.0f; // FS:250
       //values[i] *=  500.0f / 32768.0f; // FS:500
       //values[i] *= 1000.0f / 32768.0f; // FS:1000
-        values[i] *= 2000.0f / 32768.0f; // FS:2000
+      values[i] *= 2000.0f / 32768.0f; // FS:2000
     }
   #else // MPU6050
     int16_t accgyroval[6];
