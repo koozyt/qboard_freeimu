@@ -527,6 +527,12 @@ public:
     uint8_t getMgntMode();
     uint8_t getMgntStatus1();
     uint8_t getMgntStatus2();
+
+    // Enable/Disable sensor
+    bool getAccelEnabled();
+    void setAccelEnabled(bool enabled);
+    bool getGyroEnabled();
+    void setGyroEnabled(bool enabled);
     bool getMgntEnabled();
     void setMgntEnabled(bool enabled);
 private:
@@ -535,6 +541,8 @@ private:
     float mgntAdjust[3];
     float lastMgnt[3];
     uint8_t mgntStatuses[2];
+    bool accelEnabled;
+    bool gyroEnabled;
     bool mgntEnabled;
 };
 

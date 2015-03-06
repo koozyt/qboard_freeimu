@@ -27,11 +27,13 @@ void MPU9250::initialize() {
     switchSPIEnabled(false);
     delay(1);
 
+    accelEnabled = true;
+    gyroEnabled = true;
+    mgntEnabled = true;
     setClockSource(MPU9250_CLOCK_PLL_XGYRO);
     setFullScaleGyroRange(MPU9250_GYRO_FS_2000);
     setFullScaleAccelRange(MPU9250_ACCEL_FS_2);
     setSleepEnabled(false);
-
     initMgnt();
 }
 
@@ -1284,13 +1286,18 @@ void MPU9250::getMotion9(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int
  * @see MPU9250_RA_ACCEL_XOUT_H
  */
 void MPU9250::getMotion6(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz) {
-    SPIdev::readBytes(devAddr, MPU9250_RA_ACCEL_XOUT_H, 14, buffer);
-    *ax = (((int16_t)buffer[0]) << 8) | buffer[1];
-    *ay = (((int16_t)buffer[2]) << 8) | buffer[3];
-    *az = (((int16_t)buffer[4]) << 8) | buffer[5];
-    *gx = (((int16_t)buffer[8]) << 8) | buffer[9];
-    *gy = (((int16_t)buffer[10]) << 8) | buffer[11];
-    *gz = (((int16_t)buffer[12]) << 8) | buffer[13];
+    if (accelEnabled && gyroEnabled) {
+        SPIdev::readBytes(devAddr, MPU9250_RA_ACCEL_XOUT_H, 14, buffer);
+        *ax = (((int16_t)buffer[0]) << 8) | buffer[1];
+        *ay = (((int16_t)buffer[2]) << 8) | buffer[3];
+        *az = (((int16_t)buffer[4]) << 8) | buffer[5];
+        *gx = (((int16_t)buffer[8]) << 8) | buffer[9];
+        *gy = (((int16_t)buffer[10]) << 8) | buffer[11];
+        *gz = (((int16_t)buffer[12]) << 8) | buffer[13];
+    } else {
+        getAcceleration(ax, ay, az);
+        getRotation(gx, gy, gz);
+    }
 }
 /** Get 3-axis accelerometer readings.
  * These registers store the most recent accelerometer measurements.
@@ -1329,10 +1336,14 @@ void MPU9250::getMotion6(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int
  * @see MPU9250_RA_GYRO_XOUT_H
  */
 void MPU9250::getAcceleration(int16_t* x, int16_t* y, int16_t* z) {
-    SPIdev::readBytes(devAddr, MPU9250_RA_ACCEL_XOUT_H, 6, buffer);
-    *x = (((int16_t)buffer[0]) << 8) | buffer[1];
-    *y = (((int16_t)buffer[2]) << 8) | buffer[3];
-    *z = (((int16_t)buffer[4]) << 8) | buffer[5];
+    if (accelEnabled) {
+        SPIdev::readBytes(devAddr, MPU9250_RA_ACCEL_XOUT_H, 6, buffer);
+        *x = (((int16_t)buffer[0]) << 8) | buffer[1];
+        *y = (((int16_t)buffer[2]) << 8) | buffer[3];
+        *z = (((int16_t)buffer[4]) << 8) | buffer[5];
+    } else {
+        *x = *y = *z = 0;
+    }
 }
 /** Get X-axis accelerometer reading.
  * @return X-axis acceleration measurement in 16-bit 2's complement format
@@ -1408,10 +1419,14 @@ int16_t MPU9250::getTemperature() {
  * @see MPU9250_RA_GYRO_XOUT_H
  */
 void MPU9250::getRotation(int16_t* x, int16_t* y, int16_t* z) {
-    SPIdev::readBytes(devAddr, MPU9250_RA_GYRO_XOUT_H, 6, buffer);
-    *x = (((int16_t)buffer[0]) << 8) | buffer[1];
-    *y = (((int16_t)buffer[2]) << 8) | buffer[3];
-    *z = (((int16_t)buffer[4]) << 8) | buffer[5];
+    if (gyroEnabled) {
+        SPIdev::readBytes(devAddr, MPU9250_RA_GYRO_XOUT_H, 6, buffer);
+        *x = (((int16_t)buffer[0]) << 8) | buffer[1];
+        *y = (((int16_t)buffer[2]) << 8) | buffer[3];
+        *z = (((int16_t)buffer[4]) << 8) | buffer[5];
+    } else {
+        *x = *y = *z = 0;
+    }
 }
 /** Get X-axis gyroscope reading.
  * @return X-axis rotation measurement in 16-bit 2's complement format
@@ -1933,7 +1948,6 @@ void MPU9250::setZGyroOffset(int16_t offset) {
 
 // Magnetometer
 void MPU9250::initMgnt() {
-    mgntEnabled = true;
     lastMgnt[0] = lastMgnt[1] = lastMgnt[2] = 0;
 
     // enable I2C master
@@ -2040,13 +2054,27 @@ uint8_t MPU9250::getMgntStatus2() {
     return mgntStatuses[1];
 }
 
+// Enable/Disable sensor
+bool MPU9250::getAccelEnabled() {
+    return accelEnabled;
+}
+
+void MPU9250::setAccelEnabled(bool enabled) {
+    accelEnabled = enabled;
+}
+
+bool MPU9250::getGyroEnabled() {
+    return gyroEnabled;
+}
+
+void MPU9250::setGyroEnabled(bool enabled) {
+    gyroEnabled = enabled;
+}
+
 bool MPU9250::getMgntEnabled() {
-    // TODO:read from AK8963 register
     return mgntEnabled;
 }
 
 void MPU9250::setMgntEnabled(bool enabled) {
     mgntEnabled = enabled;
-    // TODO:change mode to powerdown when enabled == false
-    // TODO:change mode to read continuously when enabled == true
 }
