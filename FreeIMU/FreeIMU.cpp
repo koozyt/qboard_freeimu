@@ -360,9 +360,11 @@ void FreeIMU::getValues(float * values) {
   #if IS_9DOM()
     // calibration
     #warning Magnetometer calibration active: have you calibrated your device?
-    values[6] = (values[6] - magn_off_x) / magn_scale_x;
-    values[7] = (values[7] - magn_off_y) / magn_scale_y;
-    values[8] = (values[8] - magn_off_z) / magn_scale_z;
+    if ((values[6] != 0.0f) && (values[7] != 0.0f) && (values[8] != 0.0f)) {
+      values[6] = (values[6] - magn_off_x) / magn_scale_x;
+      values[7] = (values[7] - magn_off_y) / magn_scale_y;
+      values[8] = (values[8] - magn_off_z) / magn_scale_z;
+    }
   #endif
 }
 
