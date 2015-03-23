@@ -137,6 +137,8 @@
 
 #define MPU9250_GCONFIG_FS_SEL_BIT      4
 #define MPU9250_GCONFIG_FS_SEL_LENGTH   2
+#define MPU9250_GCONFIG_FCHIOCE_BIT     1
+#define MPU9250_GCONFIG_FCHIOCE_LENGTH  2
 
 #define MPU9250_GYRO_FS_250             0x00
 #define MPU9250_GYRO_FS_500             0x01
@@ -153,6 +155,19 @@
 #define MPU9250_ACCEL_FS_4              0x01
 #define MPU9250_ACCEL_FS_8              0x02
 #define MPU9250_ACCEL_FS_16             0x03
+
+#define MPU9250_ACONFIG2_FCHIOCE_BIT        3
+#define MPU9250_ACONFIG2_DLPF_CFG_BIT       2
+#define MPU9250_ACONFIG2_DLPF_CFG_LENGTH    2
+
+#define MPU9250_ACCEL_DLPF_BW_460           0x0
+#define MPU9250_ACCEL_DLPF_BW_184           0x1
+#define MPU9250_ACCEL_DLPF_BW_92            0x2
+#define MPU9250_ACCEL_DLPF_BW_41            0x3
+#define MPU9250_ACCEL_DLPF_BW_20            0x4
+#define MPU9250_ACCEL_DLPF_BW_10            0x5
+#define MPU9250_ACCEL_DLPF_BW_5             0x6
+#define MPU9250_ACCEL_DLPF_BW_460           0x7
 
 #define MPU9250_TEMP_FIFO_EN_BIT    7
 #define MPU9250_XG_FIFO_EN_BIT      6
@@ -335,6 +350,10 @@ public:
     void setAccelZSelfTest(bool enabled);
     uint8_t getFullScaleAccelRange();
     void setFullScaleAccelRange(uint8_t range);
+
+    // ACCEL_CONFIG2 register
+    uint8_t getAccelDLPFMode();
+    void setAccelDLPFMode(uint8_t bandwidth);
 
     // FIFO_EN register
     bool getTempFIFOEnabled();

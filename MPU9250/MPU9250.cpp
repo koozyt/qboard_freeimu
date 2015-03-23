@@ -122,30 +122,26 @@ uint8_t MPU9250::getExternalFrameSync() {
 void MPU9250::setExternalFrameSync(uint8_t sync) {
     SPIdev::writeBits(devAddr, MPU9250_RA_CONFIG, MPU9250_CFG_EXT_SYNC_SET_BIT, MPU9250_CFG_EXT_SYNC_SET_LENGTH, sync);
 }
-/** Get digital low-pass filter configuration.
+/** Get digital low-pass filter configuration for gyroscope.
  * The DLPF_CFG parameter sets the digital low pass filter configuration. It
  * also determines the internal sampling rate used by the device as shown in
  * the table below.
  *
- * Note: The accelerometer output rate is 1kHz. This means that for a Sample
- * Rate greater than 1kHz, the same accelerometer sample may be output to the
- * FIFO, DMP, and sensor registers more than once.
- *
  * <pre>
- *          |   ACCELEROMETER    |           GYROSCOPE
- * DLPF_CFG | Bandwidth | Delay  | Bandwidth | Delay  | Sample Rate
- * ---------+-----------+--------+-----------+--------+-------------
- * 0        | 260Hz     | 0ms    | 256Hz     | 0.98ms | 8kHz
- * 1        | 184Hz     | 2.0ms  | 188Hz     | 1.9ms  | 1kHz
- * 2        | 94Hz      | 3.0ms  | 98Hz      | 2.8ms  | 1kHz
- * 3        | 44Hz      | 4.9ms  | 42Hz      | 4.8ms  | 1kHz
- * 4        | 21Hz      | 8.5ms  | 20Hz      | 8.3ms  | 1kHz
- * 5        | 10Hz      | 13.8ms | 10Hz      | 13.4ms | 1kHz
- * 6        | 5Hz       | 19.0ms | 5Hz       | 18.6ms | 1kHz
- * 7        |   -- Reserved --   |   -- Reserved --   | Reserved
+ *          |           GYROSCOPE
+ * DLPF_CFG | Bandwidth | Delay   | Sample Rate
+ * ---------+-----------+---------+-------------
+ * 0        | 250Hz     | 0.97ms  | 8kHz
+ * 1        | 184Hz     | 2.9ms   | 1kHz
+ * 2        | 92Hz      | 3.9ms   | 1kHz
+ * 3        | 41Hz      | 5.9ms   | 1kHz
+ * 4        | 20Hz      | 9.9ms   | 1kHz
+ * 5        | 10Hz      | 17.85ms | 1kHz
+ * 6        | 5Hz       | 33.48ms | 1kHz
+ * 7        | 3600Hz    | 0.17ms  | 8kHz
  * </pre>
  *
- * @return DLFP configuration
+ * @return DLFP configuration for gyroscope
  * @see MPU9250_RA_CONFIG
  * @see MPU9250_CFG_DLPF_CFG_BIT
  * @see MPU9250_CFG_DLPF_CFG_LENGTH
@@ -157,7 +153,7 @@ uint8_t MPU9250::getDLPFMode() {
 /** Set digital low-pass filter configuration.
  * @param mode New DLFP configuration setting
  * @see getDLPFBandwidth()
- * @see MPU9250_DLPF_BW_256
+ * @see MPU9250_DLPF_BW_250
  * @see MPU9250_RA_CONFIG
  * @see MPU9250_CFG_DLPF_CFG_BIT
  * @see MPU9250_CFG_DLPF_CFG_LENGTH
@@ -275,6 +271,47 @@ uint8_t MPU9250::getFullScaleAccelRange() {
  */
 void MPU9250::setFullScaleAccelRange(uint8_t range) {
     SPIdev::writeBits(devAddr, MPU9250_RA_ACCEL_CONFIG, MPU9250_ACONFIG_AFS_SEL_BIT, MPU9250_ACONFIG_AFS_SEL_LENGTH, range);
+}
+
+// ACCEL_CONFIG2 register
+/** Get digital low-pass filter configuration for accelerometer.
+ * The DLPF_CFG parameter sets the digital low pass filter configuration. It
+ * also determines the internal sampling rate used by the device as shown in
+ * the table below.
+ *
+ * <pre>
+ *          |   ACCELEROMETER
+ * DLPF_CFG | Bandwidth | Delay
+ * ---------+-----------+---------
+ * 0        | 460Hz     | 1.94ms
+ * 1        | 184Hz     | 5.80ms
+ * 2        | 92Hz      | 7.80ms
+ * 3        | 41Hz      | 11.80ms
+ * 4        | 20Hz      | 19.80ms
+ * 5        | 10Hz      | 35.70ms
+ * 6        | 5Hz       | 66.96ms
+ * 7        | 460Hz     | 1.94ms
+ * </pre>
+ *
+ * @return DLFP configuration
+ * @see MPU9250_RA_ACCEL_CONFIG2
+ * @see MPU9250_ACONFIG2_DLPF_CFG_BIT
+ * @see MPU9250_ACONFIG2_DLPF_CFG_LENGTH
+ */
+uint8_t MPU9250::getAccelDLPFMode() {
+    SPIdev::readBits(devAddr, MPU9250_RA_ACCEL_CONFIG2, MPU9250_ACONFIG2_DLPF_CFG_BIT, MPU9250_ACONFIG2_DLPF_CFG_LENGTH, buffer);
+    return buffer[0];
+}
+/** Set digital low-pass filter configuration for accelerometer.
+ * @param mode New DLFP configuration setting
+ * @see getGyroDLPFBandwidth()
+ * @see MPU9250_ACCEL_DLPF_BW_460
+ * @see MPU9250_RA_ACCEL_CONFIG2
+ * @see MPU9250_ACONFIG2_DLPF_CFG_BIT
+ * @see MPU9250_ACONFIG2_DLPF_CFG_LENGTH
+ */
+void MPU9250::setAccelDLPFMode(uint8_t mode) {
+    SPIdev::writeBits(devAddr, MPU9250_RA_ACCEL_CONFIG2, MPU9250_ACONFIG2_DLPF_CFG_BIT, MPU9250_ACONFIG2_DLPF_CFG_LENGTH, mode);
 }
 
 // FIFO_EN register
