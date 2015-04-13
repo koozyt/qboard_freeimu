@@ -314,7 +314,7 @@ void FreeIMU::getValues(float * values) {
     int16_t val[9];
     accgyromagn.getMotion9(&val[0], &val[1], &val[2], &val[3], &val[4], &val[5], &val[6], &val[7], &val[8]);
     // remove offsets from the gyroscope
-    if ((val[3] != 0.0f) && (val[4] != 0.0f) && (val[5] != 0.0f)) {
+    if ((val[3] != 0.0f) || (val[4] != 0.0f) || (val[5] != 0.0f)) {
       val[3] = val[3] - gyro_off_x;
       val[4] = val[4] - gyro_off_y;
       val[5] = val[5] - gyro_off_z;
@@ -353,7 +353,7 @@ void FreeIMU::getValues(float * values) {
 
   #warning Accelerometer calibration active: have you calibrated your device?
   // remove offsets and scale accelerometer (calibration)
-  if ((values[0] != 0.0f) && (values[1] != 0.0f) && (values[2] != 0.0f)) {
+  if ((values[0] != 0.0f) || (values[1] != 0.0f) || (values[2] != 0.0f)) {
     values[0] = (values[0] - acc_off_x) / acc_scale_x;
     values[1] = (values[1] - acc_off_y) / acc_scale_y;
     values[2] = (values[2] - acc_off_z) / acc_scale_z;
@@ -366,7 +366,7 @@ void FreeIMU::getValues(float * values) {
   #if IS_9DOM()
     // calibration
     #warning Magnetometer calibration active: have you calibrated your device?
-    if ((values[6] != 0.0f) && (values[7] != 0.0f) && (values[8] != 0.0f)) {
+    if ((values[6] != 0.0f) || (values[7] != 0.0f) || (values[8] != 0.0f)) {
       values[6] = (values[6] - magn_off_x) / magn_scale_x;
       values[7] = (values[7] - magn_off_y) / magn_scale_y;
       values[8] = (values[8] - magn_off_z) / magn_scale_z;
