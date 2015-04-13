@@ -186,6 +186,8 @@ void FreeIMU::init(int accgyro_addr, bool fastmode) {
   accgyromagn = MPU9250();
   accgyromagn.initialize();
   accgyromagn.setFullScaleGyroRange(MPU9250_GYRO_FS_2000);
+  accgyromagn.setDLPFMode(MPU9250_DLPF_BW_92);
+  accgyromagn.setAccelDLPFMode(MPU9250_ACCEL_DLPF_BW_92);
   delay(5);
   #endif
 
