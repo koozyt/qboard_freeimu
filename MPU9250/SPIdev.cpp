@@ -129,6 +129,8 @@ int8_t SPIdev::readWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data, uint16
 int8_t SPIdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t *data, uint16_t timeout) {
     uint8_t buffer[BUFFSIZE];
     buffer[0] = regAddr | 0x80;
+    SPI.setSSState(devAddr, 0);
+    delay(1);
     SPI.transfer(devAddr, buffer, length+1);
     memcpy(data, &buffer[1], length);
     return length;
@@ -271,6 +273,8 @@ bool SPIdev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_
     digitalWrite(devAddr, LOW);
     buffer[0] = regAddr;
     memcpy(&buffer[1], data, length);
+    SPI.setSSState(devAddr, 0);
+    delay(1);
     SPI.transfer(devAddr, buffer, length+1);
     digitalWrite(devAddr, HIGH);
     return true;
