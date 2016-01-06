@@ -139,7 +139,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   #define FIMU_ACCGYRO_ADDR MPU60X0_DEFAULT_SS_PIN
 #elif HAS_MPU9250()
   #include <SPI.h>
-  #include "MPU9250.h"
+  #include "MPU9250/MPU9250.h"
   #define FIMU_ACCGYRO_ADDR 0
 #endif
 
