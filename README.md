@@ -17,36 +17,22 @@ Q.board の FreeIMU ライブラリです。
 インストール方法
 ================
 
-### Mac の場合
+1. QBoard_FreeIMU.zip をダウンロードします
+2. Arduino を起動して、メニュー > スケッチ > Include Library > Add .ZIP Library... を選択します
+3. 先ほどダウンロードした QBoard_FreeIME.zip を選択すると Arduino にインストールされます
 
-ターミナルで以下を実行してください
-
-``````````````````````````````````````````````````````````````
-$ mkdir -p ~/Documents/Arduino/libraries
-$ cd ~/Documents/Arduino/libraries
-$ git clone koogit@koogit.koozyt.com:qboard/lib_freeimu.git .
-``````````````````````````````````````````````````````````````
 
 簡単な使い方
 ============
 1. Arduino を起動して新規スケッチを開きます
-2. メニュー > スケッチ > ライブラリを使用 > FreeIMU を選択します
- 幾つかのヘッダーファイルが include されます
-3. メニュー > スケッチ > ライブラリを使用 > MPU9250 を選択します
-4. メニュー > スケッチ > ライブラリを使用 > SPI を選択します
-5. メニュー > スケッチ > ライブラリを使用 > DebugUtils を選択します
-6. スケッチを書きます  
+2. メニュー > スケッチ > Include Library > QBoard_FreeIMU を選択します
+3. メニュー > スケッチ > Include Library > SPI を選択します
+4. スケッチを書きます  
  例. Q.board の加速度センサーを取得してシリアルに出力する方法  
 
     `````````````````````````````````````
-    #include <DebugUtils.h>
     #include <SPI.h>
-    #include <MPU9250.h>
-    #include <SPIdev.h>
-    #include <calibration.h>
-    #include <CommunicationUtils.h>
-    #include <FreeIMU.h>
-    #include <vector_math.h>
+    #include <QBoard_FreeIMU.h>
     
     FreeIMU imu = FreeIMU();
     float fvalues[9];
@@ -64,12 +50,12 @@ $ git clone koogit@koogit.koozyt.com:qboard/lib_freeimu.git .
 	delay(1000);
     }
     `````````````````````````````````````
-7. Q.board を USB ケーブルでPCにつなぎます
-8. Q.board 用 Arudino を起動します
-9. メニュー > ツール > ポート > /dev/cu.usbmodemXXX を選択します
-10. メニュー > ツール > ボード > Koozyt Dash (Native USB POrt) を選択します
-11. メニュー > ファイル > マイコンボードに書き込む を選択するとファームウェアを書き込みます
-12. 書き込み後 メニュー > ツール > シリアルモニタ を選択します  
+5. Q.board を USB ケーブルでPCにつなぎます
+6. Q.board 用 Arudino を起動します
+7. メニュー > ツール > ポート > /dev/cu.usbmodemXXX を選択します
+8. メニュー > ツール > ボード > Koozyt Dash (Native USB POrt) を選択します
+9. メニュー > ファイル > マイコンボードに書き込む を選択するとファームウェアを書き込みます
+10. 書き込み後 メニュー > ツール > シリアルモニタ を選択します  
  シリアルモニタウィンドウが表示します。一秒間に一回加速度値が取得出来ていれば成功です！
 
 
