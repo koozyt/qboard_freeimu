@@ -17,9 +17,10 @@ Q.board の FreeIMU ライブラリです。
 インストール方法
 ================
 
-1. QBoard_FreeIMU.zip をダウンロードします
+1. QBoard_FreeIMU.zip をダウンロードします  
+ https://dev.koozyt.com/qboard/arduino/freeimu/QBoard_FreeIMU.zip
 2. Arduino を起動して、メニュー > スケッチ > Include Library > Add .ZIP Library... を選択します
-3. 先ほどダウンロードした QBoard_FreeIME.zip を選択すると Arduino にインストールされます
+3. 先ほどダウンロードした QBoard_FreeIMU.zip を選択すると Arduino にインストールされます
 
 
 簡単な使い方
