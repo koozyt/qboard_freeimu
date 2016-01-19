@@ -20,13 +20,13 @@ Q.board の FreeIMU ライブラリです。
 1. qboard_freeimu.zip をダウンロードします  
  http://koozyt.github.io/qboard_freeimu/packages/qboard_freeimu.zip
 2. Arduino を起動して、メニュー > スケッチ > Include Library > Add .ZIP Library... を選択します
-3. 先ほどダウンロードした QBoard_FreeIMU.zip を選択すると Arduino にインストールされます
+3. 先ほどダウンロードした qboard_freeimu.zip を選択すると Arduino にインストールされます
 
 
 簡単な使い方
 ============
 1. Arduino を起動して新規スケッチを開きます
-2. メニュー > スケッチ > Include Library > QBoard_FreeIMU を選択します
+2. メニュー > スケッチ > Include Library > Q.board_FreeIMU を選択します
 3. メニュー > スケッチ > Include Library > SPI を選択します
 4. スケッチを書きます  
  例. Q.board の加速度センサーを取得してシリアルに出力する方法  
