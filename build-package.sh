@@ -1,2 +1,2 @@
 #!/bin/sh
-zip -r packages/QBoard_FreeIMU.zip library.properties src README.md LICENSE.txt
+zip -r packages/qboard_freeimu.zip library.properties src README.md LICENSE.txt
